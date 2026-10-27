@@ -1,0 +1,23 @@
+# Build artifacts
+**/target/
+**/*.class
+**/*.jar
+**/*.war
+
+# Logs
+*.log
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+
+# Docker volumes
+postgres_data/
+
+# OS
+.DS_Store
+Thumbs.db
