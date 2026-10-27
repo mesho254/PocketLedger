@@ -17,11 +17,11 @@ subprojects {
 }
 subprojects {
     project.evaluationDependsOn(":app")
-    afterEvaluate {
-        plugins.withId("com.android.library") {
-            configure<com.android.build.gradle.LibraryExtension> {
-                ndkVersion = "27.0.12077973"
-            }
+}
+subprojects {
+    plugins.withId("com.android.library") {
+        configure<com.android.build.gradle.LibraryExtension> {
+            ndkVersion = "27.0.12077973"
         }
     }
 }
