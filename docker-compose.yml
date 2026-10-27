@@ -16,6 +16,33 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - pocketledger-net
+
+  backend:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: pocketledger-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/pocketledger_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgrespassword
+      SERVER_PORT: 8080
+      JWT_SECRET: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+      JWT_EXPIRATION_MS: 86400000
+    networks:
+      - pocketledger-net
 
 volumes:
   postgres_data:
+
+networks:
+  pocketledger-net:
+    driver: bridge
