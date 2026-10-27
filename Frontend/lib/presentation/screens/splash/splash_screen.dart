@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../core/constants/app_colors.dart';
-import '../providers/auth_provider.dart';
-import '../screens/auth/login_screen.dart';
-import '../screens/main_shell_screen.dart';
+import 'package:pocketledger/core/constants/app_colors.dart';
+import 'package:pocketledger/presentation/providers/auth_provider.dart';
+import 'package:pocketledger/presentation/screens/auth/login_screen.dart';
+import 'package:pocketledger/presentation/screens/main_shell_screen.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
