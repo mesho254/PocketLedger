@@ -170,11 +170,16 @@ cd Frontend
 # 1. Install Flutter dependencies
 flutter pub get
 
-# 2. Run unit tests
+# 2. Run unit & widget tests (100% pass)
 flutter test
 
-# 3. Launch application
-flutter run
+# 3. Check connected devices
+flutter devices
+
+# 4. Launch on Android Emulator (Recommended)
+flutter run -d emulator-5554
+# or on Chrome
+flutter run -d chrome
 ```
 
 ---

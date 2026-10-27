@@ -53,7 +53,41 @@ flutter test
 ```
 
 ### 4. Run the App
+
+#### Run on Connected Android Emulator (Recommended):
 ```bash
-flutter run
+# Check connected devices
+flutter devices
+
+# Run on Android Emulator (API 36 / 10.0.2.2 auto-maps to backend)
+flutter run -d emulator-5554
+# or
+flutter run -d android
 ```
-*(Supports Android, iOS, Web, and Desktop)*
+
+#### Run on Web (Fast Browser Testing):
+```bash
+# Launch in Google Chrome
+flutter run -d chrome
+
+# Launch in Microsoft Edge
+flutter run -d edge
+```
+
+#### Run on Windows Desktop:
+```bash
+flutter run -d windows
+```
+> **Note**: Building Windows desktop with native plugins requires Windows Developer Mode. If prompted, run `start ms-settings:developers` and toggle **Developer Mode** to **On**.
+
+---
+
+## 🛠️ Helpful Commands & Troubleshooting
+
+| Command | Purpose |
+| :--- | :--- |
+| `flutter devices` | List all running emulators, physical phones, and browsers |
+| `flutter test` | Run the complete unit and widget test suite (6/6 tests) |
+| `flutter create .` | Re-generate platform wrappers (`android/`, `ios/`, `web/`, `windows/`) if needed |
+| `flutter clean && flutter pub get` | Clear build artifacts and re-fetch dependencies |
+| `export PATH="$PATH:/c/Users/HomePC/flutter/bin"` | Temporarily export Flutter to terminal PATH if needed |
