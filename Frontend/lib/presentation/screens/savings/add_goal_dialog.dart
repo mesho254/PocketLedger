@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/utils/currency_formatter.dart';
 import '../../providers/savings_provider.dart';
 import '../../widgets/custom_text_field.dart';
 import '../../widgets/primary_button.dart';
@@ -47,6 +48,7 @@ class _AddGoalDialogState extends ConsumerState<AddGoalDialog> {
   }
 
   void _pickDate() async {
+    final p = context.palette;
     final picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now().add(const Duration(days: 90)),
@@ -54,13 +56,13 @@ class _AddGoalDialogState extends ConsumerState<AddGoalDialog> {
       lastDate: DateTime(2035),
       builder: (context, child) {
         return Theme(
-          data: ThemeData.dark().copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: AppColors.accentCyan,
-              onPrimary: Colors.white,
-              surface: AppColors.surfaceCardDark,
-              onSurface: AppColors.textPrimaryDark,
-            ),
+          data: Theme.of(context).copyWith(
+            colorScheme: Theme.of(context).colorScheme.copyWith(
+                  primary: p.primaryBrand,
+                  onPrimary: Colors.white,
+                  surface: p.cardSurface,
+                  onSurface: p.textPrimary,
+                ),
           ),
           child: child!,
         );
@@ -73,9 +75,15 @@ class _AddGoalDialogState extends ConsumerState<AddGoalDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
+    final currency = ref.watch(currencyFormatterProvider);
+
     return Dialog(
-      backgroundColor: AppColors.surfaceCardDark,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      backgroundColor: p.cardSurface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(28),
+        side: BorderSide(color: p.borderSubtle),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Form(
@@ -84,22 +92,22 @@ class _AddGoalDialogState extends ConsumerState<AddGoalDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text(
+              Text(
                 'Create Savings Goal',
                 style: TextStyle(
-                  color: AppColors.textPrimaryDark,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+                  color: p.textPrimary,
+                  fontSize: 19,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.3,
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 18),
 
-              // Title
               CustomTextField(
                 controller: _titleController,
                 label: 'Goal Title',
                 hint: 'e.g. Emergency Fund, New Laptop',
-                prefixIcon: Icons.flag_rounded,
+                prefixIcon: Icons.flag_outlined,
                 validator: (val) {
                   if (val == null || val.trim().isEmpty) return 'Enter a goal title';
                   return null;
@@ -107,13 +115,12 @@ class _AddGoalDialogState extends ConsumerState<AddGoalDialog> {
               ),
               const SizedBox(height: 16),
 
-              // Target Amount
               CustomTextField(
                 controller: _targetAmountController,
-                label: 'Target Amount (\$)',
+                label: 'Target Amount (${currency.symbol})',
                 hint: '1000.00',
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                prefixIcon: Icons.attach_money_rounded,
+                prefixIcon: Icons.payments_outlined,
                 validator: (val) {
                   if (val == null || val.isEmpty) return 'Enter a target amount';
                   final numVal = double.tryParse(val);
@@ -123,39 +130,38 @@ class _AddGoalDialogState extends ConsumerState<AddGoalDialog> {
               ),
               const SizedBox(height: 16),
 
-              // Target Date Picker
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Target Date (Optional)',
                     style: TextStyle(
-                      color: AppColors.textSecondaryDark,
+                      color: p.textSecondary,
                       fontSize: 13,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(height: 6),
                   InkWell(
                     onTap: _pickDate,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(16),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
                       decoration: BoxDecoration(
-                        color: AppColors.surfaceDark,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.borderDark),
+                        color: p.nestedSurface,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: p.borderSubtle),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.calendar_today_rounded, size: 18, color: AppColors.textSecondaryDark),
+                          Icon(Icons.calendar_today_outlined, size: 18, color: p.textSecondary),
                           const SizedBox(width: 10),
                           Text(
                             _targetDate != null
                                 ? DateFormat('MMMM dd, yyyy').format(_targetDate!)
                                 : 'Select target completion date',
                             style: TextStyle(
-                              color: _targetDate != null ? AppColors.textPrimaryDark : AppColors.textMutedDark,
+                              color: _targetDate != null ? p.textPrimary : p.textMuted,
                               fontSize: 14,
                             ),
                           ),
@@ -170,7 +176,7 @@ class _AddGoalDialogState extends ConsumerState<AddGoalDialog> {
               PrimaryButton(
                 text: 'Create Goal',
                 isLoading: _isLoading,
-                backgroundColor: AppColors.accentCyan,
+                backgroundColor: p.primaryBrand,
                 onPressed: _save,
               ),
             ],

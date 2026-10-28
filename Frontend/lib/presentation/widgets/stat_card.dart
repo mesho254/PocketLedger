@@ -19,12 +19,15 @@ class StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: backgroundColor ?? AppColors.surfaceCardDark,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.borderDark, width: 1),
+        color: backgroundColor ?? p.cardSurface,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: p.borderSubtle, width: 1),
+        boxShadow: p.cardShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -32,20 +35,23 @@ class StatCard extends StatelessWidget {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(9),
                 decoration: BoxDecoration(
-                  color: iconColor.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(8),
+                  color: iconColor.withOpacity(0.14),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(icon, color: iconColor, size: 18),
               ),
               const SizedBox(width: 8),
-              Text(
-                title,
-                style: const TextStyle(
-                  color: AppColors.textSecondaryDark,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w500,
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    color: p.textSecondary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
@@ -53,10 +59,11 @@ class StatCard extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             amount,
-            style: const TextStyle(
-              color: AppColors.textPrimaryDark,
+            style: TextStyle(
+              color: p.textPrimary,
               fontSize: 20,
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.4,
             ),
           ),
         ],

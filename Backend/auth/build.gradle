@@ -1,0 +1,53 @@
+plugins {
+    id 'java-library'
+    id 'org.springframework.boot' version '3.2.0'
+    id 'io.spring.dependency-management' version '1.1.4'
+    id "com.diffplug.spotless" version "6.25.0"
+}
+
+group = 'com.pocketledger'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    sourceCompatibility = '21'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    api platform('org.springframework.boot:spring-boot-dependencies:3.2.0')
+
+    // Transitive dependencies shared with other modules (use 'api' so they flow to consumers)
+    api 'org.springframework.boot:spring-boot-starter-web'
+    api 'org.springframework.boot:spring-boot-starter-security'
+    api 'org.springframework.boot:spring-boot-starter-data-jpa'
+    api 'org.springframework.boot:spring-boot-starter-validation:3.2.0'
+    api 'jakarta.persistence:jakarta.persistence-api'
+    api 'org.projectlombok:lombok:1.18.32'
+    api 'org.mapstruct:mapstruct:1.5.5.Final'
+    api 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0'
+
+    // Auth-specific implementations
+    implementation 'commons-codec:commons-codec:1.16.0'
+    implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
+
+    runtimeOnly 'org.postgresql:postgresql'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
+
+    compileOnly 'org.projectlombok:lombok:1.18.32'
+    annotationProcessor 'org.projectlombok:lombok:1.18.32'
+    annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+spotless {
+    java {
+        googleJavaFormat()
+        removeUnusedImports()
+    }
+}
+

@@ -32,6 +32,22 @@ class UserModel {
         'currency': currency,
         if (createdAt != null) 'createdAt': createdAt!.toIso8601String(),
       };
+
+  UserModel copyWith({
+    String? id,
+    String? email,
+    String? fullName,
+    String? currency,
+    DateTime? createdAt,
+  }) {
+    return UserModel(
+      id: id ?? this.id,
+      email: email ?? this.email,
+      fullName: fullName ?? this.fullName,
+      currency: currency ?? this.currency,
+      createdAt: createdAt ?? this.createdAt,
+    );
+  }
 }
 
 class AuthResponseModel {

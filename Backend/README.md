@@ -1,68 +1,105 @@
-# PocketLedger REST API
+# PocketLedger — Multi-Module Personal Finance Backend
 
-Enterprise personal finance & budgeting backend built with **Spring Boot 3.3.5 (Java 21)** and **PostgreSQL 16**.
+A multi-module, multi-tenant-isolated Spring Boot 3 application providing a complete personal finance, expense ledger, budgeting, savings goal, and analytics backend connected to **PostgreSQL (`pocketledger_db`)**.
 
----
-
-## Architecture Highlights
-- **Stateless Authentication**: Spring Security 6 + JJWT 0.12 (HMAC-SHA256) Bearer tokens.
-- **Tenancy Data Isolation**: Every transaction, budget, and savings goal query enforces strict `user_id` scoping at the JPA layer.
-- **Financial Math Safety**: All currency values use `BigDecimal` in Java and `NUMERIC(12, 2)` in PostgreSQL to eliminate floating-point precision loss.
-- **Interactive OpenAPI/Swagger**: Full OpenAPI 3.0 specification available at `/swagger-ui/index.html` with Bearer auth support.
+🔗 **📖 [Read the Full Comprehensive Documentation →](COMPREHENSIVE_README.md)** for complete setup, architecture, API reference, and troubleshooting guide.
 
 ---
 
-## Quickstart
+## Quick Start (60 seconds)
 
-### 1. Start PostgreSQL
-```bash
-docker compose up -d
-```
-*(Runs PostgreSQL 16 Alpine on port `5433`, database: `pocketledger_db`)*
+### 1. Prerequisites
+- Java 21+
+- Local PostgreSQL 16/18 (`pocketledger_db` created in pgAdmin 4 on `localhost:5432`, user `postgres`, password `root`)
 
-### 2. Build & Run Tests
-```bash
-cd Backend
-./mvnw clean test
+### 2. Build & Run
+```powershell
+# Build all modules
+.\gradlew.bat clean build
+
+# Run the unified PocketLedger service
+.\gradlew.bat :pocketledger-service:bootRun
 ```
 
-### 3. Run the Application
-```bash
-./mvnw spring-boot:run
-# OR run the packaged jar
-java -jar target/pocketledger-api-0.0.1-SNAPSHOT.jar
-```
-Application starts on `http://localhost:8080`.
+### 3. Access
+- **API Base URL:** `http://localhost:8080/api/v1`
+- **Swagger UI:** `http://localhost:8080/swagger-ui/index.html`
+- **OpenAPI Spec:** `http://localhost:8080/api-docs`
 
 ---
 
-## API Documentation & Endpoints
+## What's Included?
 
-Interactive Swagger UI: **`http://localhost:8080/swagger-ui/index.html`**  
-OpenAPI JSON Spec: **`http://localhost:8080/api-docs`**
+| Module | Purpose | Status |
+|--------|---------|--------|
+| **auth** | Authentication, JWT Security, User Profile & Base Auditing (`BaseAuditableEntity`) | ✅ Phase 1 |
+| **transaction** | Income & Expense Ledger, Filtering & Pagination | ✅ Phase 2 |
+| **budget** | Monthly Category Budgets & Spending Threshold Alerts (`SAFE`, `WARNING_80`, `EXCEEDED`) | ✅ Phase 3 |
+| **savings** | Target Savings Goals & Atomic Contribution Deposits | ✅ Phase 4 |
+| **analytics** | Monthly Financial Summaries, Net Savings Rate & Category Breakdowns | ✅ Phase 5 |
+| **pocketledger-service** | Runnable Spring Boot Aggregator Service | ✅ Production Ready |
 
-### Authentication
-* `POST /api/v1/auth/register` — Register a new user
-* `POST /api/v1/auth/login` — Login and receive JWT access token
-* `GET /api/v1/auth/me` — Retrieve current authenticated user profile
+---
 
-### Transactions
-* `POST /api/v1/transactions` — Record income or expense
-* `GET /api/v1/transactions` — Filter transactions by `startDate`, `endDate`, `type` (`INCOME`/`EXPENSE`), `category`, with pagination
-* `GET /api/v1/transactions/{id}` — Get single transaction details
-* `PUT /api/v1/transactions/{id}` — Update transaction
-* `DELETE /api/v1/transactions/{id}` — Delete transaction
+## Key Features
 
-### Analytics & Summaries
-* `GET /api/v1/analytics/monthly-summary?year=2026&month=10` — Net savings, income vs expense totals, savings rate percentage, and category breakdowns
+- 🏢 **Strict User Tenancy Isolation** — Isolated data per authenticated user across all modules
+- 🔐 **JWT & Refresh Token Authentication** — Stateless Bearer token API security with token blacklisting
+- 📊 **Zero Floating-Point Drift** — `BigDecimal` in Java mapped to `NUMERIC(12, 2)` in PostgreSQL
+- 🎯 **Monthly Budgets & Alerts** — Real-time spending progress against monthly category limits
+- 💰 **Savings Goals & Contributions** — Atomic `@Transactional` goal deposits and completion tracking
+- 🔄 **Domain Events** — Event publishing on transactions, budget updates, and savings deposits
+- ✅ **Comprehensive Tests** — Validator, service, and controller unit tests across modules
+- 🧹 **Code Quality** — Google Java Format & Spotless integration (`./gradlew.bat spotlessApply`)
 
-### Budgets
-* `POST /api/v1/budgets` — Set or update monthly category spending limit
-* `GET /api/v1/budgets?year=2026&month=10` — View category limits for month
-* `GET /api/v1/budgets/progress?year=2026&month=10` — Spending progress against limits with status alerts (`SAFE`, `WARNING_80`, `EXCEEDED`)
+---
 
-### Savings Goals
-* `POST /api/v1/savings-goals` — Create target savings goal
-* `GET /api/v1/savings-goals` — List all user goals with completion percentages
-* `POST /api/v1/savings-goals/{id}/contributions` — Record atomic deposit/contribution towards goal
-* `GET /api/v1/savings-goals/{id}/contributions` — View contribution history
+## Create a New Module
+
+```powershell
+# Using PowerShell script
+.\scripts\new-module.ps1 -ModuleName mymodule
+
+# Or using Gradle
+.\gradlew.bat createModule -Pname=mymodule
+```
+
+Creates:
+- Full Java package structure (`controller`, `service`, `repository`, `entity`, `enums`, `dto`, `mapper`, `exception`, `validation`, `event`)
+- Spring Boot & Spotless module `build.gradle`
+- Automatic registration in `settings.gradle`
+
+---
+
+## Database Setup (Local PostgreSQL & pgAdmin 4)
+
+```powershell
+# Auto-created on startup via Hibernate (spring.jpa.hibernate.ddl-auto=update)
+# Or apply migrations manually in pgAdmin Query Tool / psql:
+
+psql -U postgres -d pocketledger_db -f schema/postgresql/001_create_users_and_auth_tables.sql
+psql -U postgres -d pocketledger_db -f schema/postgresql/002_create_transactions_table.sql
+psql -U postgres -d pocketledger_db -f schema/postgresql/003_create_budgets_table.sql
+psql -U postgres -d pocketledger_db -f schema/postgresql/004_create_savings_goals_tables.sql
+```
+
+---
+
+## Build & Test
+
+```powershell
+# Build all modules
+.\gradlew.bat clean build
+
+# Run all tests
+.\gradlew.bat test
+
+# Run tests for a specific module
+.\gradlew.bat :transaction:test
+.\gradlew.bat :budget:test
+.\gradlew.bat :savings:test
+.\gradlew.bat :analytics:test
+
+# Fix code formatting
+.\gradlew.bat spotlessApply
+```

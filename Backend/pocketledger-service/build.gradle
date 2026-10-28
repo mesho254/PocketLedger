@@ -1,0 +1,31 @@
+plugins {
+    id 'java-library'
+    id 'org.springframework.boot' version '3.2.0'
+    id 'io.spring.dependency-management' version '1.1.4'
+}
+
+group = 'com.pocketledger'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    sourceCompatibility = '21'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(':auth')
+    implementation project(':transaction')
+    implementation project(':budget')
+    implementation project(':savings')
+    implementation project(':analytics')
+
+    runtimeOnly 'org.postgresql:postgresql'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
+
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+

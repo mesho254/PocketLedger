@@ -19,14 +19,20 @@ class PrimaryButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
+    final btnColor = backgroundColor ?? p.primaryBrand;
+
     return SizedBox(
       width: double.infinity,
-      height: 52,
+      height: 54,
       child: ElevatedButton(
         onPressed: isLoading ? null : onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: backgroundColor ?? AppColors.primary,
-          disabledBackgroundColor: AppColors.primary.withOpacity(0.5),
+          backgroundColor: btnColor,
+          disabledBackgroundColor: btnColor.withOpacity(0.5),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+          ),
         ),
         child: isLoading
             ? const SizedBox(

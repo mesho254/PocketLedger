@@ -131,6 +131,97 @@ class AuthNotifier extends StateNotifier<AuthState> {
       user: null,
     );
   }
+
+  Future<bool> updateProfile({
+    required String fullName,
+    required String email,
+    required String currency,
+  }) async {
+    final currentUser = state.user;
+    final cleanCurrency = currency.toUpperCase().trim();
+    final optimisticUser = (currentUser ??
+            UserModel(
+              id: 'local',
+              email: email.trim(),
+              fullName: fullName.trim(),
+              currency: cleanCurrency,
+            ))
+        .copyWith(
+      fullName: fullName.trim(),
+      email: email.trim(),
+      currency: cleanCurrency,
+    );
+
+    // Apply immediately so the UI & currency formatter update across all screens right away
+    state = state.copyWith(
+      status: AuthStatus.authenticated,
+      user: optimisticUser,
+      errorMessage: null,
+    );
+    await _authRepository.saveUserLocally(optimisticUser);
+
+    try {
+      final serverUser = await _authRepository.updateProfile(
+        fullName: fullName.trim(),
+        email: email.trim(),
+        currency: cleanCurrency,
+      );
+      state = state.copyWith(
+        status: AuthStatus.authenticated,
+        user: serverUser,
+        errorMessage: null,
+      );
+      return true;
+    } catch (e) {
+      // Keep local optimistic update so currency/profile changes still work even if offline,
+      // unless it's a specific validation error like duplicate email
+      final msg = e.toString();
+      if (msg.toLowerCase().contains('already exists')) {
+        if (currentUser != null) {
+          state = state.copyWith(user: currentUser, errorMessage: msg);
+          await _authRepository.saveUserLocally(currentUser);
+        }
+        return false;
+      }
+      return true;
+    }
+  }
+
+  Future<bool> updateCurrency(String newCurrency) async {
+    final user = state.user;
+    final clean = newCurrency.toUpperCase().trim();
+    if (user == null) {
+      final fallbackUser = UserModel(
+        id: 'local',
+        email: 'user@pocketledger.app',
+        fullName: 'PocketLedger User',
+        currency: clean,
+      );
+      state = state.copyWith(user: fallbackUser);
+      await _authRepository.saveUserLocally(fallbackUser);
+      return true;
+    }
+    return updateProfile(
+      fullName: user.fullName,
+      email: user.email,
+      currency: clean,
+    );
+  }
+
+  Future<String?> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      await _authRepository.changePassword(
+        currentPassword: currentPassword,
+        newPassword: newPassword,
+      );
+      return null; // null means success
+    } catch (e) {
+      return e.toString();
+    }
+  }
 }
 
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {

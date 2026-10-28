@@ -1,0 +1,59 @@
+// Root build.gradle for multi-module project
+plugins {
+    id 'java'
+}
+
+allprojects {
+    group = 'com.pocketledger'
+    version = '0.0.1-SNAPSHOT'
+
+    repositories {
+        mavenCentral()
+    }
+}
+
+subprojects {
+    apply plugin: 'java'
+
+    java {
+        sourceCompatibility = '21'
+        targetCompatibility = '21'
+    }
+
+    tasks.withType(JavaCompile) {
+        options.compilerArgs << '-parameters'
+    }
+
+    dependencies {
+        testImplementation 'org.junit.jupiter:junit-jupiter:5.9.3'
+    }
+}
+
+tasks.register('createModule') {
+    doLast {
+        def name = project.findProperty('name')
+        if (!name) {
+            throw new GradleException("Usage: ./gradlew.bat createModule -Pname=transaction")
+        }
+
+        def script = file('scripts/new-module.ps1').absolutePath.replace('\\', '/')
+        def basePackage = project.findProperty('basePackage') ?: 'com.pocketledger'
+        def command = [
+                'powershell',
+                '-NoProfile',
+                '-ExecutionPolicy', 'Bypass',
+                '-File', script,
+                '-ModuleName', name,
+                '-BasePackage', basePackage
+        ]
+
+        def proc = command.execute(null, rootDir)
+        proc.consumeProcessOutput(System.out, System.err)
+        if (proc.waitFor() != 0) {
+            throw new GradleException('Module scaffold generation failed')
+        }
+    }
+}
+
+// Use `./gradlew.bat :pocketledger-service:bootRun` to run the application from Windows PowerShell
+

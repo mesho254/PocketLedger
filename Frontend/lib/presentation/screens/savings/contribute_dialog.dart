@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/utils/currency_formatter.dart';
 import '../../../data/models/savings_goal_model.dart';
 import '../../providers/savings_provider.dart';
 import '../../widgets/custom_text_field.dart';
@@ -49,9 +50,15 @@ class _ContributeDialogState extends ConsumerState<ContributeDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
+    final currency = ref.watch(currencyFormatterProvider);
+
     return Dialog(
-      backgroundColor: AppColors.surfaceCardDark,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      backgroundColor: p.cardSurface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(28),
+        side: BorderSide(color: p.borderSubtle),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Form(
@@ -62,20 +69,21 @@ class _ContributeDialogState extends ConsumerState<ContributeDialog> {
             children: [
               Text(
                 'Deposit to "${widget.goal.title}"',
-                style: const TextStyle(
-                  color: AppColors.textPrimaryDark,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+                style: TextStyle(
+                  color: p.textPrimary,
+                  fontSize: 19,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.3,
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 18),
 
               CustomTextField(
                 controller: _amountController,
-                label: 'Contribution Amount (\$)',
+                label: 'Contribution Amount (${currency.symbol})',
                 hint: '100.00',
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                prefixIcon: Icons.attach_money_rounded,
+                prefixIcon: Icons.payments_outlined,
                 validator: (val) {
                   if (val == null || val.isEmpty) return 'Enter an amount';
                   final numVal = double.tryParse(val);
@@ -96,7 +104,7 @@ class _ContributeDialogState extends ConsumerState<ContributeDialog> {
               PrimaryButton(
                 text: 'Record Deposit',
                 isLoading: _isLoading,
-                backgroundColor: AppColors.primary,
+                backgroundColor: p.primaryBrand,
                 onPressed: _save,
               ),
             ],

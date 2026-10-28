@@ -16,7 +16,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    // Allow animation to render, then route based on auth status
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkAuth();
     });
@@ -40,6 +39,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
+
     ref.listen<AuthState>(authProvider, (previous, next) {
       if (next.status == AuthStatus.authenticated) {
         Navigator.of(context).pushReplacement(
@@ -53,52 +54,52 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     });
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
+      backgroundColor: p.scaffoldBg,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(22),
               decoration: BoxDecoration(
-                color: AppColors.primary.withOpacity(0.15),
+                color: p.badgeBg,
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: AppColors.primary.withOpacity(0.3),
-                  width: 2,
+                  color: p.primaryBrand.withOpacity(0.25),
+                  width: 1.5,
                 ),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.account_balance_wallet_rounded,
-                size: 64,
-                color: AppColors.primary,
+                size: 56,
+                color: p.primaryBrand,
               ),
             ),
-            const SizedBox(height: 24),
-            const Text(
+            const SizedBox(height: 22),
+            Text(
               'PocketLedger',
               style: TextStyle(
                 fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: AppColors.textPrimaryDark,
-                letterSpacing: 1.2,
+                fontWeight: FontWeight.w700,
+                color: p.textPrimary,
+                letterSpacing: -0.6,
               ),
             ),
-            const SizedBox(height: 8),
-            const Text(
+            const SizedBox(height: 6),
+            Text(
               'Smart Personal Finance & Budgeting',
               style: TextStyle(
                 fontSize: 14,
-                color: AppColors.textSecondaryDark,
+                color: p.textSecondary,
               ),
             ),
-            const SizedBox(height: 48),
-            const SizedBox(
+            const SizedBox(height: 44),
+            SizedBox(
               width: 24,
               height: 24,
               child: CircularProgressIndicator(
                 strokeWidth: 2.5,
-                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                valueColor: AlwaysStoppedAnimation<Color>(p.primaryBrand),
               ),
             ),
           ],

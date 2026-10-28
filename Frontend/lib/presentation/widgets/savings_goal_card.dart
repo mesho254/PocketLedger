@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/utils/currency_formatter.dart';
 import '../../data/models/savings_goal_model.dart';
+import '../providers/theme_provider.dart';
 
 class SavingsGoalCard extends StatelessWidget {
   final SavingsGoalModel goal;
@@ -15,118 +17,172 @@ class SavingsGoalCard extends StatelessWidget {
     this.onDelete,
   });
 
+  String _daysLeftLabel() {
+    if (goal.isCompleted) return 'Goal achieved 🎉';
+    if (goal.targetDate == null) return 'Flexible timeline';
+    final diff = goal.targetDate!.difference(DateTime.now()).inDays;
+    if (diff < 0) return 'Target date passed';
+    if (diff == 0) return 'Due today';
+    return '$diff days left';
+  }
+
   @override
   Widget build(BuildContext context) {
-    final currencyFmt = NumberFormat.currency(symbol: '\$', decimalDigits: 0);
-    final progress = (goal.percentageCompleted / 100.0).clamp(0.0, 1.0);
+    return Consumer(
+      builder: (context, ref, _) {
+        final p = context.palette;
+        final currency = ref.watch(currencyFormatterProvider);
+        final isMasked = ref.watch(balancePrivacyProvider);
+        final progress = (goal.percentageCompleted / 100.0).clamp(0.0, 1.0);
+        final fillColor = goal.isCompleted ? p.incomeGreen : p.primaryBrand;
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
       margin: const EdgeInsets.symmetric(vertical: 6),
       decoration: BoxDecoration(
-        color: AppColors.surfaceCardDark,
-        borderRadius: BorderRadius.circular(16),
+        color: p.cardSurface,
+        borderRadius: BorderRadius.circular(22),
         border: Border.all(
-          color: goal.isCompleted
-              ? AppColors.primary.withOpacity(0.5)
-              : AppColors.borderDark,
+          color: goal.isCompleted ? p.incomeGreen.withOpacity(0.45) : p.borderSubtle,
           width: 1,
         ),
+        boxShadow: p.cardShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Top row: Goal title & Percentage (matching Novbank "Financial goals" row)
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Expanded(
                 child: Text(
                   goal.title,
-                  style: const TextStyle(
-                    color: AppColors.textPrimaryDark,
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
+                  style: TextStyle(
+                    color: p.textPrimary,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: -0.2,
                   ),
                 ),
               ),
-              if (goal.isCompleted)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(8),
+              Text(
+                '${goal.percentageCompleted.toStringAsFixed(0)}%',
+                style: TextStyle(
+                  color: p.textPrimary,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 5),
+
+          // Second row: "$70,500 of $100,000" on left, "57 days left" on right
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                isMasked
+                    ? '${currency.masked('••••')} of ${currency.masked('••••')}'
+                    : '${currency.format(goal.currentAmount, decimalDigits: 0)} of ${currency.format(goal.targetAmount, decimalDigits: 0)}',
+                style: TextStyle(
+                  color: p.textSecondary,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+              Text(
+                _daysLeftLabel(),
+                style: TextStyle(
+                  color: p.textMuted,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+
+          // Slim 6px deep-teal progress bar on soft track (matching Novbank)
+          ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: LinearProgressIndicator(
+              value: progress,
+              minHeight: 6,
+              backgroundColor: p.progressTrack,
+              valueColor: AlwaysStoppedAnimation<Color>(fillColor),
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Action footer: Deposit pill button + optional Delete
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              if (onDelete != null)
+                TextButton.icon(
+                  onPressed: onDelete,
+                  icon: Icon(Icons.delete_outline_rounded, size: 16, color: p.textMuted),
+                  label: Text(
+                    'Delete',
+                    style: TextStyle(color: p.textMuted, fontSize: 12),
                   ),
-                  child: const Text(
-                    'COMPLETED 🎉',
-                    style: TextStyle(
-                      color: AppColors.primary,
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
+                  style: TextButton.styleFrom(
+                    visualDensity: VisualDensity.compact,
+                  ),
+                ),
+              const Spacer(),
+              if (!goal.isCompleted)
+                InkWell(
+                  onTap: onContribute,
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                    decoration: BoxDecoration(
+                      color: p.badgeBg,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: p.primaryBrand.withOpacity(0.25)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.add_rounded, size: 16, color: p.badgeText),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Deposit',
+                          style: TextStyle(
+                            color: p.badgeText,
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 )
               else
-                Text(
-                  '${goal.percentageCompleted.toStringAsFixed(1)}%',
-                  style: const TextStyle(
-                    color: AppColors.accentCyan,
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: p.incomeGreen.withOpacity(0.14),
+                    borderRadius: BorderRadius.circular(20),
                   ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: LinearProgressIndicator(
-              value: progress,
-              minHeight: 8,
-              backgroundColor: AppColors.surfaceDark,
-              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.accentCyan),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Saved: ${currencyFmt.format(goal.currentAmount)}',
-                    style: const TextStyle(
-                      color: AppColors.textPrimaryDark,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
-                    ),
-                  ),
-                  Text(
-                    'Target: ${currencyFmt.format(goal.targetAmount)}',
-                    style: const TextStyle(
-                      color: AppColors.textSecondaryDark,
+                  child: Text(
+                    'Completed',
+                    style: TextStyle(
+                      color: p.incomeGreen,
                       fontSize: 12,
+                      fontWeight: FontWeight.w700,
                     ),
-                  ),
-                ],
-              ),
-              if (!goal.isCompleted)
-                ElevatedButton.icon(
-                  onPressed: onContribute,
-                  icon: const Icon(Icons.add, size: 16),
-                  label: const Text('Deposit'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.surfaceDark,
-                    foregroundColor: AppColors.primary,
-                    side: const BorderSide(color: AppColors.primary, width: 1),
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                    textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
                   ),
                 ),
             ],
           ),
         ],
       ),
+    );
+      },
     );
   }
 }

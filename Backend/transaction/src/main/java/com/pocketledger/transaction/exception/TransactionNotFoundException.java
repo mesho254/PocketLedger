@@ -1,0 +1,14 @@
+package com.pocketledger.transaction.exception;
+
+import java.util.UUID;
+
+public class TransactionNotFoundException extends RuntimeException {
+
+  public TransactionNotFoundException(String message) {
+    super(message);
+  }
+
+  public TransactionNotFoundException(UUID transactionId) {
+    super("Transaction not found or access denied: " + transactionId);
+  }
+}

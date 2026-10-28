@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/utils/currency_formatter.dart';
 import '../../providers/budget_provider.dart';
 import '../../widgets/custom_text_field.dart';
 import '../../widgets/primary_button.dart';
@@ -57,9 +58,15 @@ class _SetBudgetDialogState extends ConsumerState<SetBudgetDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
+    final currency = ref.watch(currencyFormatterProvider);
+
     return Dialog(
-      backgroundColor: AppColors.surfaceCardDark,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      backgroundColor: p.cardSurface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(28),
+        side: BorderSide(color: p.borderSubtle),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(24),
         child: Form(
@@ -68,37 +75,44 @@ class _SetBudgetDialogState extends ConsumerState<SetBudgetDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text(
+              Text(
                 'Set Monthly Budget Limit',
                 style: TextStyle(
-                  color: AppColors.textPrimaryDark,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+                  color: p.textPrimary,
+                  fontSize: 19,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.3,
                 ),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 18),
 
-              // Category Picker
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Category',
                     style: TextStyle(
-                      color: AppColors.textSecondaryDark,
+                      color: p.textSecondary,
                       fontSize: 13,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(height: 6),
                   DropdownButtonFormField<String>(
                     value: _selectedCategory,
-                    dropdownColor: AppColors.surfaceDark,
-                    style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 15),
-                    decoration: const InputDecoration(
-                      prefixIcon: Icon(Icons.category_rounded, color: AppColors.textSecondaryDark),
+                    dropdownColor: p.cardSurface,
+                    style: TextStyle(
+                      color: p.textPrimary,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
                     ),
-                    items: _categories.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+                    decoration: InputDecoration(
+                      fillColor: p.nestedSurface,
+                      prefixIcon: Icon(Icons.category_outlined, color: p.textSecondary, size: 20),
+                    ),
+                    items: _categories
+                        .map((c) => DropdownMenuItem(value: c, child: Text(c)))
+                        .toList(),
                     onChanged: (val) {
                       if (val != null) setState(() => _selectedCategory = val);
                     },
@@ -107,13 +121,12 @@ class _SetBudgetDialogState extends ConsumerState<SetBudgetDialog> {
               ),
               const SizedBox(height: 16),
 
-              // Monthly Limit
               CustomTextField(
                 controller: _limitController,
-                label: 'Monthly Limit (\$)',
+                label: 'Monthly Limit (${currency.symbol})',
                 hint: '500.00',
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                prefixIcon: Icons.attach_money_rounded,
+                prefixIcon: Icons.payments_outlined,
                 validator: (val) {
                   if (val == null || val.isEmpty) return 'Please enter an amount';
                   final numVal = double.tryParse(val);

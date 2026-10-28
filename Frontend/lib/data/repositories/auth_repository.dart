@@ -59,6 +59,49 @@ class AuthRepository {
     return user;
   }
 
+  Future<UserModel> updateProfile({
+    required String fullName,
+    required String email,
+    required String currency,
+  }) async {
+    final response = await apiClient.put(
+      ApiConstants.me,
+      data: {
+        'fullName': fullName,
+        'email': email,
+        'currency': currency,
+      },
+    );
+    final data = response.data;
+    if (data is Map<String, dynamic>) {
+      final newToken = data['token']?.toString();
+      if (newToken != null && newToken.isNotEmpty) {
+        await storageService.saveToken(newToken);
+      }
+      final user = UserModel.fromJson(data);
+      await storageService.saveUser(user.toJson());
+      return user;
+    }
+    throw Exception('Unexpected profile response');
+  }
+
+  Future<void> saveUserLocally(UserModel user) async {
+    await storageService.saveUser(user.toJson());
+  }
+
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    await apiClient.post(
+      ApiConstants.changePassword,
+      data: {
+        'currentPassword': currentPassword,
+        'newPassword': newPassword,
+      },
+    );
+  }
+
   Future<void> logout() async {
     await storageService.clearAuth();
   }

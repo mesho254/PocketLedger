@@ -1,0 +1,3 @@
+rootProject.name='PocketLedger'
+include('auth','transaction','budget','savings','analytics','pocketledger-service')
+

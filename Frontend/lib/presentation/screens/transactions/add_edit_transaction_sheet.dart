@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/utils/currency_formatter.dart';
 import '../../../data/models/transaction_model.dart';
 import '../../providers/analytics_provider.dart';
 import '../../providers/budget_provider.dart';
@@ -100,7 +101,6 @@ class _AddEditTransactionSheetState extends ConsumerState<AddEditTransactionShee
     if (mounted) {
       setState(() => _isLoading = false);
       if (success) {
-        // Refresh analytics and budgets
         ref.read(analyticsProvider.notifier).loadSummary();
         ref.read(budgetProvider.notifier).loadBudgets();
         Navigator.pop(context);
@@ -109,6 +109,7 @@ class _AddEditTransactionSheetState extends ConsumerState<AddEditTransactionShee
   }
 
   void _pickDate() async {
+    final p = context.palette;
     final picked = await showDatePicker(
       context: context,
       initialDate: _selectedDate,
@@ -116,13 +117,13 @@ class _AddEditTransactionSheetState extends ConsumerState<AddEditTransactionShee
       lastDate: DateTime(2030),
       builder: (context, child) {
         return Theme(
-          data: ThemeData.dark().copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: AppColors.primary,
-              onPrimary: Colors.white,
-              surface: AppColors.surfaceCardDark,
-              onSurface: AppColors.textPrimaryDark,
-            ),
+          data: Theme.of(context).copyWith(
+            colorScheme: Theme.of(context).colorScheme.copyWith(
+                  primary: p.primaryBrand,
+                  onPrimary: Colors.white,
+                  surface: p.cardSurface,
+                  onSurface: p.textPrimary,
+                ),
           ),
           child: child!,
         );
@@ -135,6 +136,8 @@ class _AddEditTransactionSheetState extends ConsumerState<AddEditTransactionShee
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
+    final currency = ref.watch(currencyFormatterProvider);
     final categories = _type == 'INCOME' ? _incomeCategories : _expenseCategories;
     if (!categories.contains(_category)) {
       _category = categories.first;
@@ -142,14 +145,15 @@ class _AddEditTransactionSheetState extends ConsumerState<AddEditTransactionShee
 
     return Container(
       padding: EdgeInsets.only(
-        top: 20,
+        top: 18,
         left: 24,
         right: 24,
         bottom: MediaQuery.of(context).viewInsets.bottom + 24,
       ),
-      decoration: const BoxDecoration(
-        color: AppColors.surfaceCardDark,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      decoration: BoxDecoration(
+        color: p.cardSurface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+        border: Border.all(color: p.borderSubtle),
       ),
       child: SingleChildScrollView(
         child: Form(
@@ -160,10 +164,10 @@ class _AddEditTransactionSheetState extends ConsumerState<AddEditTransactionShee
             children: [
               Center(
                 child: Container(
-                  width: 40,
+                  width: 42,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: AppColors.borderDark,
+                    color: p.borderSubtle,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -171,19 +175,21 @@ class _AddEditTransactionSheetState extends ConsumerState<AddEditTransactionShee
               const SizedBox(height: 16),
               Text(
                 widget.existingTransaction != null ? 'Edit Transaction' : 'Record Transaction',
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimaryDark,
+                  fontWeight: FontWeight.w700,
+                  color: p.textPrimary,
+                  letterSpacing: -0.3,
                 ),
               ),
               const SizedBox(height: 18),
 
-              // Type Switcher (Income vs Expense)
+              // Segmented Type Switcher (Expense vs Income)
               Container(
                 decoration: BoxDecoration(
-                  color: AppColors.surfaceDark,
-                  borderRadius: BorderRadius.circular(12),
+                  color: p.nestedSurface,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: p.borderSubtle),
                 ),
                 padding: const EdgeInsets.all(4),
                 child: Row(
@@ -191,18 +197,19 @@ class _AddEditTransactionSheetState extends ConsumerState<AddEditTransactionShee
                     Expanded(
                       child: GestureDetector(
                         onTap: () => setState(() => _type = 'EXPENSE'),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 10),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 180),
+                          padding: const EdgeInsets.symmetric(vertical: 11),
                           decoration: BoxDecoration(
-                            color: _type == 'EXPENSE' ? AppColors.expense : Colors.transparent,
-                            borderRadius: BorderRadius.circular(10),
+                            color: _type == 'EXPENSE' ? p.expenseRose : Colors.transparent,
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Center(
+                          child: Center(
                             child: Text(
                               'Expense',
                               style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                                color: _type == 'EXPENSE' ? Colors.white : p.textSecondary,
                               ),
                             ),
                           ),
@@ -212,18 +219,19 @@ class _AddEditTransactionSheetState extends ConsumerState<AddEditTransactionShee
                     Expanded(
                       child: GestureDetector(
                         onTap: () => setState(() => _type = 'INCOME'),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 10),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 180),
+                          padding: const EdgeInsets.symmetric(vertical: 11),
                           decoration: BoxDecoration(
-                            color: _type == 'INCOME' ? AppColors.income : Colors.transparent,
-                            borderRadius: BorderRadius.circular(10),
+                            color: _type == 'INCOME' ? p.incomeGreen : Colors.transparent,
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Center(
+                          child: Center(
                             child: Text(
                               'Income',
                               style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                                color: _type == 'INCOME' ? Colors.white : p.textSecondary,
                               ),
                             ),
                           ),
@@ -235,13 +243,12 @@ class _AddEditTransactionSheetState extends ConsumerState<AddEditTransactionShee
               ),
               const SizedBox(height: 18),
 
-              // Amount
               CustomTextField(
                 controller: _amountController,
-                label: 'Amount (\$)',
+                label: 'Amount (${currency.symbol})',
                 hint: '0.00',
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                prefixIcon: Icons.attach_money_rounded,
+                prefixIcon: Icons.payments_outlined,
                 validator: (val) {
                   if (val == null || val.isEmpty) return 'Enter an amount';
                   final numVal = double.tryParse(val);
@@ -251,25 +258,29 @@ class _AddEditTransactionSheetState extends ConsumerState<AddEditTransactionShee
               ),
               const SizedBox(height: 16),
 
-              // Category
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Category',
                     style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.textSecondaryDark,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: p.textSecondary,
                     ),
                   ),
                   const SizedBox(height: 6),
                   DropdownButtonFormField<String>(
                     value: _category,
-                    dropdownColor: AppColors.surfaceDark,
-                    style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 16),
-                    decoration: const InputDecoration(
-                      prefixIcon: Icon(Icons.category_rounded, color: AppColors.textSecondaryDark),
+                    dropdownColor: p.cardSurface,
+                    style: TextStyle(
+                      color: p.textPrimary,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    decoration: InputDecoration(
+                      fillColor: p.nestedSurface,
+                      prefixIcon: Icon(Icons.category_outlined, color: p.textSecondary, size: 20),
                     ),
                     items: categories.map((cat) {
                       return DropdownMenuItem(value: cat, child: Text(cat));
@@ -282,39 +293,42 @@ class _AddEditTransactionSheetState extends ConsumerState<AddEditTransactionShee
               ),
               const SizedBox(height: 16),
 
-              // Date Picker Field
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Date',
                     style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.textSecondaryDark,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: p.textSecondary,
                     ),
                   ),
                   const SizedBox(height: 6),
                   InkWell(
                     onTap: _pickDate,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(16),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
                       decoration: BoxDecoration(
-                        color: AppColors.surfaceDark,
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: AppColors.borderDark),
+                        color: p.nestedSurface,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: p.borderSubtle),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.calendar_today_rounded, size: 20, color: AppColors.textSecondaryDark),
+                          Icon(Icons.calendar_today_outlined, size: 19, color: p.textSecondary),
                           const SizedBox(width: 12),
                           Text(
                             DateFormat('MMMM dd, yyyy').format(_selectedDate),
-                            style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 15),
+                            style: TextStyle(
+                              color: p.textPrimary,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                           const Spacer(),
-                          const Icon(Icons.arrow_drop_down, color: AppColors.textSecondaryDark),
+                          Icon(Icons.arrow_drop_down, color: p.textSecondary),
                         ],
                       ),
                     ),
@@ -323,7 +337,6 @@ class _AddEditTransactionSheetState extends ConsumerState<AddEditTransactionShee
               ),
               const SizedBox(height: 16),
 
-              // Description
               CustomTextField(
                 controller: _descriptionController,
                 label: 'Description (Optional)',

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/utils/currency_formatter.dart';
 import '../../providers/auth_provider.dart';
 import '../../widgets/custom_text_field.dart';
 import '../../widgets/primary_button.dart';
@@ -20,8 +21,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _passwordController = TextEditingController();
   String _selectedCurrency = 'USD';
   bool _obscurePassword = true;
-
-  final List<String> _currencies = ['USD', 'EUR', 'GBP', 'KES', 'CAD', 'AUD'];
 
   @override
   void dispose() {
@@ -51,188 +50,201 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
     final authState = ref.watch(authProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
+      backgroundColor: p.scaffoldBg,
       appBar: AppBar(
         title: const Text('Create Account'),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Text(
-                  'Join PocketLedger',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimaryDark,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                const Text(
-                  'Start tracking expenses and achieving your savings goals today.',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: AppColors.textSecondaryDark,
-                  ),
-                ),
-                const SizedBox(height: 28),
-
-                // Error banner
-                if (authState.errorMessage != null) ...[
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: AppColors.expense.withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: AppColors.expense.withOpacity(0.3)),
+          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 16),
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: p.cardSurface,
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(color: p.borderSubtle, width: 1),
+              boxShadow: p.cardShadow,
+            ),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    'Join PocketLedger',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w700,
+                      color: p.textPrimary,
+                      letterSpacing: -0.4,
                     ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.error_outline, color: AppColors.expense, size: 20),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            authState.errorMessage!,
-                            style: const TextStyle(color: AppColors.expense, fontSize: 13),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Start tracking expenses and achieving your savings goals today.',
+                    style: TextStyle(
+                      fontSize: 13.5,
+                      color: p.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  if (authState.errorMessage != null) ...[
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: p.expenseRose.withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: p.expenseRose.withOpacity(0.35)),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(Icons.error_outline, color: p.expenseRose, size: 20),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              authState.errorMessage!,
+                              style: TextStyle(color: p.expenseRose, fontSize: 13),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                ],
+                    const SizedBox(height: 16),
+                  ],
 
-                // Full Name
-                CustomTextField(
-                  controller: _fullNameController,
-                  label: 'Full Name',
-                  hint: 'e.g. Jane Doe',
-                  prefixIcon: Icons.person_outline,
-                  validator: (val) {
-                    if (val == null || val.trim().isEmpty) {
-                      return 'Please enter your full name';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 18),
-
-                // Email
-                CustomTextField(
-                  controller: _emailController,
-                  label: 'Email Address',
-                  hint: 'you@example.com',
-                  prefixIcon: Icons.email_outlined,
-                  keyboardType: TextInputType.emailAddress,
-                  validator: (val) {
-                    if (val == null || val.trim().isEmpty) {
-                      return 'Please enter your email';
-                    }
-                    if (!val.contains('@') || !val.contains('.')) {
-                      return 'Enter a valid email address';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 18),
-
-                // Password
-                CustomTextField(
-                  controller: _passwordController,
-                  label: 'Password',
-                  hint: 'At least 6 characters',
-                  prefixIcon: Icons.lock_outline,
-                  obscureText: _obscurePassword,
-                  suffixIcon: IconButton(
-                    icon: Icon(
-                      _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                      color: AppColors.textSecondaryDark,
-                      size: 20,
-                    ),
-                    onPressed: () {
-                      setState(() => _obscurePassword = !_obscurePassword);
+                  CustomTextField(
+                    controller: _fullNameController,
+                    label: 'Full Name',
+                    hint: 'e.g. Jane Doe',
+                    prefixIcon: Icons.person_outline,
+                    validator: (val) {
+                      if (val == null || val.trim().isEmpty) {
+                        return 'Please enter your full name';
+                      }
+                      return null;
                     },
                   ),
-                  validator: (val) {
-                    if (val == null || val.length < 6) {
-                      return 'Password must be at least 6 characters';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 18),
+                  const SizedBox(height: 16),
 
-                // Currency Dropdown
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Preferred Currency',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.textSecondaryDark,
+                  CustomTextField(
+                    controller: _emailController,
+                    label: 'Email Address',
+                    hint: 'you@example.com',
+                    prefixIcon: Icons.email_outlined,
+                    keyboardType: TextInputType.emailAddress,
+                    validator: (val) {
+                      if (val == null || val.trim().isEmpty) {
+                        return 'Please enter your email';
+                      }
+                      if (!val.contains('@') || !val.contains('.')) {
+                        return 'Enter a valid email address';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
+                  CustomTextField(
+                    controller: _passwordController,
+                    label: 'Password',
+                    hint: 'At least 6 characters',
+                    prefixIcon: Icons.lock_outline,
+                    obscureText: _obscurePassword,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                        color: p.textSecondary,
+                        size: 20,
                       ),
-                    ),
-                    const SizedBox(height: 6),
-                    DropdownButtonFormField<String>(
-                      value: _selectedCurrency,
-                      dropdownColor: AppColors.surfaceDark,
-                      style: const TextStyle(color: AppColors.textPrimaryDark, fontSize: 16),
-                      decoration: const InputDecoration(
-                        prefixIcon: Icon(Icons.currency_exchange, color: AppColors.textSecondaryDark),
-                      ),
-                      items: _currencies.map((curr) {
-                        return DropdownMenuItem(
-                          value: curr,
-                          child: Text(curr),
-                        );
-                      }).toList(),
-                      onChanged: (val) {
-                        if (val != null) setState(() => _selectedCurrency = val);
+                      onPressed: () {
+                        setState(() => _obscurePassword = !_obscurePassword);
                       },
                     ),
-                  ],
-                ),
-                const SizedBox(height: 32),
+                    validator: (val) {
+                      if (val == null || val.length < 6) {
+                        return 'Password must be at least 6 characters';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
 
-                // Submit Button
-                PrimaryButton(
-                  text: 'Create Account',
-                  isLoading: authState.status == AuthStatus.loading,
-                  onPressed: _submit,
-                ),
-                const SizedBox(height: 24),
-
-                // Back to login
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text(
-                      'Already have an account? ',
-                      style: TextStyle(color: AppColors.textSecondaryDark, fontSize: 14),
-                    ),
-                    GestureDetector(
-                      onTap: () => Navigator.of(context).pop(),
-                      child: const Text(
-                        'Sign In',
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Preferred Currency',
                         style: TextStyle(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: p.textSecondary,
                         ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                      const SizedBox(height: 6),
+                      DropdownButtonFormField<String>(
+                        value: _selectedCurrency,
+                        dropdownColor: p.cardSurface,
+                        style: TextStyle(
+                          color: p.textPrimary,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        decoration: InputDecoration(
+                          fillColor: p.nestedSurface,
+                          prefixIcon: Icon(
+                            Icons.currency_exchange,
+                            color: p.textSecondary,
+                            size: 20,
+                          ),
+                        ),
+                        items: CurrencyFormatter.supportedCurrencies.map((curr) {
+                          return DropdownMenuItem(
+                            value: curr.code,
+                            child: Text(curr.displayLabel),
+                          );
+                        }).toList(),
+                        onChanged: (val) {
+                          if (val != null) setState(() => _selectedCurrency = val);
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 28),
+
+                  PrimaryButton(
+                    text: 'Create Account',
+                    isLoading: authState.status == AuthStatus.loading,
+                    onPressed: _submit,
+                  ),
+                  const SizedBox(height: 20),
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Already have an account? ',
+                        style: TextStyle(color: p.textSecondary, fontSize: 13.5),
+                      ),
+                      GestureDetector(
+                        onTap: () => Navigator.of(context).pop(),
+                        child: Text(
+                          'Sign In',
+                          style: TextStyle(
+                            color: p.primaryBrand,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13.5,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),

@@ -27,15 +27,17 @@ class CustomTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final p = context.palette;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: AppColors.textSecondaryDark,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+            color: p.textSecondary,
           ),
         ),
         const SizedBox(height: 6),
@@ -45,11 +47,15 @@ class CustomTextField extends StatelessWidget {
           keyboardType: keyboardType,
           validator: validator,
           onChanged: onChanged,
-          style: const TextStyle(color: AppColors.textPrimaryDark),
+          style: TextStyle(
+            color: p.textPrimary,
+            fontWeight: FontWeight.w500,
+          ),
           decoration: InputDecoration(
             hintText: hint,
+            fillColor: p.nestedSurface,
             prefixIcon: prefixIcon != null
-                ? Icon(prefixIcon, color: AppColors.textSecondaryDark)
+                ? Icon(prefixIcon, color: p.textSecondary, size: 20)
                 : null,
             suffixIcon: suffixIcon,
           ),
