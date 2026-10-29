@@ -1,8 +1,14 @@
 import 'package:flutter/foundation.dart';
 
 class ApiConstants {
+  // Optional compile-time override: flutter run --dart-define=API_BASE_URL=https://pocketledger-backend.onrender.com/api/v1
+  static const String _envBaseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: '');
+
   // Use 10.0.2.2 for Android Emulator, localhost for iOS simulator/Web/Desktop
   static String get baseUrl {
+    if (_envBaseUrl.isNotEmpty) {
+      return _envBaseUrl;
+    }
     if (kIsWeb) {
       return 'http://localhost:8080/api/v1';
     }

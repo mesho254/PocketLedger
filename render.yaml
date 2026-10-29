@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: pocketledger-backend
+    runtime: docker
+    rootDir: Backend
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRATION_MS
+        value: "86400000"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: pocketledger-db
+          property: connectionString
+
+databases:
+  - name: pocketledger-db
+    databaseName: pocketledger_db
+    user: pocketledger_user
+    plan: free
+
