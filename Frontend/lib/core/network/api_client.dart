@@ -29,14 +29,18 @@ class ApiClient {
     dio = Dio(
       BaseOptions(
         baseUrl: ApiConstants.baseUrl,
-        connectTimeout: const Duration(seconds: 15),
-        receiveTimeout: const Duration(seconds: 15),
+        // 75s timeout accommodates Render Free Tier cold-start spin-up (~50s)
+        connectTimeout: const Duration(seconds: 75),
+        receiveTimeout: const Duration(seconds: 75),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
       ),
     );
+
+    // Fire a non-blocking warm-up ping to wake up the Render instance on app launch
+    warmUpServer();
 
     dio.interceptors.add(
       InterceptorsWrapper(
@@ -79,6 +83,16 @@ class ApiClient {
     }
 
     return ApiException(message: e.message ?? 'Unexpected network error occurred.');
+  }
+
+  /// Sends a lightweight background ping to https://pocketledger-backend.onrender.com
+  /// so the Render free-tier container wakes up immediately when the app opens.
+  Future<void> warmUpServer() async {
+    try {
+      await dio.get(ApiConstants.health);
+    } catch (_) {
+      // Ignore warm-up errors; regular requests will still proceed
+    }
   }
 
   Future<Response> get(

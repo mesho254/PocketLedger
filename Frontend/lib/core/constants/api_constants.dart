@@ -1,22 +1,19 @@
-import 'package:flutter/foundation.dart';
-
 class ApiConstants {
-  // Optional compile-time override: flutter run --dart-define=API_BASE_URL=https://pocketledger-backend.onrender.com/api/v1
+  // Production Render Backend URL
+  static const String productionBaseUrl = 'https://pocketledger-backend.onrender.com/api/v1';
+
+  // Optional compile-time override: flutter run --dart-define=API_BASE_URL=...
   static const String _envBaseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: '');
 
-  // Use 10.0.2.2 for Android Emulator, localhost for iOS simulator/Web/Desktop
   static String get baseUrl {
     if (_envBaseUrl.isNotEmpty) {
       return _envBaseUrl;
     }
-    if (kIsWeb) {
-      return 'http://localhost:8080/api/v1';
-    }
-    // Default emulator loopback or local LAN
-    return defaultTargetPlatform == TargetPlatform.android
-        ? 'http://10.0.2.2:8080/api/v1'
-        : 'http://localhost:8080/api/v1';
+    return productionBaseUrl;
   }
+
+  // Health check endpoint (wakes up Render Free Tier instance)
+  static const String health = '/health';
 
   // Auth endpoints
   static const String register = '/auth/register';
