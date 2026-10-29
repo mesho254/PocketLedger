@@ -164,17 +164,46 @@ public class AuthServiceImpl implements AuthService {
   @Override
   @Transactional
   public void logout(String refreshToken) {
-    if (tokenBlacklistService != null) {
+    if (tokenBlacklistService != null && refreshToken != null && !refreshToken.isBlank()) {
       long expiry = jwtService.getRemainingValidity(refreshToken);
       tokenBlacklistService.blacklist(refreshToken, expiry);
     }
-    if (refreshTokenRepository != null) {
+    if (refreshTokenRepository != null && refreshToken != null && !refreshToken.isBlank()) {
       String tokenHash = hash(refreshToken);
       RefreshToken stored = refreshTokenRepository
           .findByTokenHash(tokenHash)
           .orElseThrow(() -> new BadRequestException("Invalid refresh token"));
       stored.setRevoked(true);
       refreshTokenRepository.save(stored);
+    }
+  }
+
+  @Override
+  @Transactional
+  public void logout(String accessToken, String refreshToken) {
+    if (tokenBlacklistService != null && accessToken != null && !accessToken.isBlank()) {
+      long expiry = jwtService.getRemainingValidity(accessToken);
+      if (expiry > 0) {
+        tokenBlacklistService.blacklist(accessToken, expiry);
+      }
+    }
+    if (refreshToken != null && !refreshToken.isBlank()) {
+      if (tokenBlacklistService != null) {
+        long refreshExpiry = jwtService.getRemainingValidity(refreshToken);
+        if (refreshExpiry > 0) {
+          tokenBlacklistService.blacklist(refreshToken, refreshExpiry);
+        }
+      }
+      if (refreshTokenRepository != null) {
+        String tokenHash = hash(refreshToken);
+        refreshTokenRepository
+            .findByTokenHash(tokenHash)
+            .ifPresent(
+                stored -> {
+                  stored.setRevoked(true);
+                  refreshTokenRepository.save(stored);
+                });
+      }
     }
   }
 
@@ -197,6 +226,9 @@ public class AuthServiceImpl implements AuthService {
 
     user.setPasswordHash(passwordEncoder.encode(newPassword));
     userRepository.save(user);
+    if (refreshTokenRepository != null) {
+      refreshTokenRepository.revokeAllByUserId(userId);
+    }
   }
 
   @Override

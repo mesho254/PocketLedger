@@ -5,9 +5,16 @@ class SecureStorageService {
   final FlutterSecureStorage _storage;
 
   SecureStorageService({FlutterSecureStorage? storage})
-      : _storage = storage ?? const FlutterSecureStorage();
+      : _storage = storage ??
+            const FlutterSecureStorage(
+              aOptions: AndroidOptions(encryptedSharedPreferences: true),
+              iOptions: IOSOptions(
+                accessibility: KeychainAccessibility.first_unlock_this_device,
+              ),
+            );
 
   static const String _keyToken = 'auth_token';
+  static const String _keyRefreshToken = 'auth_refresh_token';
   static const String _keyUser = 'auth_user';
   static const String _keyThemeMode = 'app_theme_mode';
 
@@ -18,6 +25,19 @@ class SecureStorageService {
   Future<String?> getToken() async {
     try {
       return await _storage.read(key: _keyToken);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  Future<void> saveRefreshToken(String? refreshToken) async {
+    if (refreshToken == null || refreshToken.isEmpty) return;
+    await _storage.write(key: _keyRefreshToken, value: refreshToken);
+  }
+
+  Future<String?> getRefreshToken() async {
+    try {
+      return await _storage.read(key: _keyRefreshToken);
     } catch (_) {
       return null;
     }
@@ -42,6 +62,7 @@ class SecureStorageService {
   Future<void> clearAuth() async {
     try {
       await _storage.delete(key: _keyToken);
+      await _storage.delete(key: _keyRefreshToken);
       await _storage.delete(key: _keyUser);
     } catch (_) {}
   }

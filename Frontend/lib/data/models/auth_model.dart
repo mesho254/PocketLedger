@@ -52,11 +52,13 @@ class UserModel {
 
 class AuthResponseModel {
   final String token;
+  final String? refreshToken;
   final String tokenType;
   final UserModel user;
 
   AuthResponseModel({
     required this.token,
+    this.refreshToken,
     required this.tokenType,
     required this.user,
   });
@@ -64,6 +66,7 @@ class AuthResponseModel {
   factory AuthResponseModel.fromJson(Map<String, dynamic> json) {
     return AuthResponseModel(
       token: json['token'] ?? '',
+      refreshToken: json['refreshToken']?.toString(),
       tokenType: json['tokenType'] ?? 'Bearer',
       user: UserModel.fromJson(json),
     );

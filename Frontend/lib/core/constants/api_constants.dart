@@ -1,9 +1,11 @@
 class ApiConstants {
   // Production Render Backend URL
-  static const String productionBaseUrl = 'https://pocketledger-backend.onrender.com/api/v1';
+  static const String productionBaseUrl =
+      'https://pocketledger-backend.onrender.com/api/v1';
 
   // Optional compile-time override: flutter run --dart-define=API_BASE_URL=...
-  static const String _envBaseUrl = String.fromEnvironment('API_BASE_URL', defaultValue: '');
+  static const String _envBaseUrl =
+      String.fromEnvironment('API_BASE_URL', defaultValue: '');
 
   static String get baseUrl {
     if (_envBaseUrl.isNotEmpty) {
@@ -18,6 +20,8 @@ class ApiConstants {
   // Auth endpoints
   static const String register = '/auth/register';
   static const String login = '/auth/login';
+  static const String refresh = '/auth/refresh';
+  static const String logout = '/auth/logout';
   static const String me = '/auth/me';
   static const String changePassword = '/auth/change-password';
 
@@ -33,5 +37,6 @@ class ApiConstants {
 
   // Savings Goals
   static const String savingsGoals = '/savings-goals';
-  static String savingsContributions(String goalId) => '/savings-goals/$goalId/contributions';
+  static String savingsContributions(String goalId) =>
+      '/savings-goals/$goalId/contributions';
 }

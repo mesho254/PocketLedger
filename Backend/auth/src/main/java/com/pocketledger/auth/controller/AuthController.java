@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -53,9 +54,20 @@ public class AuthController {
   }
 
   @PostMapping("/logout")
-  @Operation(summary = "Revoke refresh token and blacklist session")
-  public ResponseEntity<Void> logout(@Valid @RequestBody RefreshRequest request) {
-    authService.logout(request.getRefreshToken());
+  @Operation(summary = "Revoke refresh token and blacklist active JWT access token")
+  public ResponseEntity<Void> logout(
+      @RequestHeader(value = "Authorization", required = false) String authHeader,
+      @RequestBody(required = false) RefreshRequest request) {
+    String accessToken =
+        (authHeader != null && authHeader.startsWith("Bearer "))
+            ? authHeader.substring(7)
+            : null;
+    String refreshToken = request != null ? request.getRefreshToken() : null;
+    if (accessToken != null) {
+      authService.logout(accessToken, refreshToken);
+    } else if (refreshToken != null && !refreshToken.isBlank()) {
+      authService.logout(refreshToken);
+    }
     return ResponseEntity.noContent().build();
   }
 

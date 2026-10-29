@@ -30,6 +30,7 @@ class AuthRepository {
 
     final authResponse = AuthResponseModel.fromJson(response.data);
     await storageService.saveToken(authResponse.token);
+    await storageService.saveRefreshToken(authResponse.refreshToken);
     await storageService.saveUser(authResponse.user.toJson());
     return authResponse;
   }
@@ -48,6 +49,7 @@ class AuthRepository {
 
     final authResponse = AuthResponseModel.fromJson(response.data);
     await storageService.saveToken(authResponse.token);
+    await storageService.saveRefreshToken(authResponse.refreshToken);
     await storageService.saveUser(authResponse.user.toJson());
     return authResponse;
   }
@@ -103,7 +105,17 @@ class AuthRepository {
   }
 
   Future<void> logout() async {
-    await storageService.clearAuth();
+    try {
+      final refreshToken = await storageService.getRefreshToken();
+      await apiClient.post(
+        ApiConstants.logout,
+        data: refreshToken != null ? {'refreshToken': refreshToken} : <String, dynamic>{},
+      );
+    } catch (_) {
+      // Proceed with local credential wipe even if server is unreachable
+    } finally {
+      await storageService.clearAuth();
+    }
   }
 
   Future<String?> getToken() => storageService.getToken();

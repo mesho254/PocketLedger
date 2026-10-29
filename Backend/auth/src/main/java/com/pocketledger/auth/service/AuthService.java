@@ -19,6 +19,8 @@ public interface AuthService {
 
   void logout(String refreshToken);
 
+  void logout(String accessToken, String refreshToken);
+
   void changePassword(UUID userId, String currentPassword, String newPassword);
 
   UserProfileResponse getCurrentUser(UserPrincipal userPrincipal);
